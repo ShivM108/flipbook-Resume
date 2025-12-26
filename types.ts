@@ -27,6 +27,8 @@ export interface ProjectItem {
   description: string;
   technologies: string[];
   link?: string;
+  date: string;
+  status: string;
 }
 
 export interface Certification {

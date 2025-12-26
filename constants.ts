@@ -81,12 +81,16 @@ export const RESUME_DATA: ResumeData = {
       title: "Personal Portfolio Website",
       description: "A responsive portfolio website designed to showcase professional background, skills, and projects. Features a clean, modern UI optimized for all devices.",
       technologies: ["HTML5", "CSS3", "JavaScript", "Responsive Design"],
-      link: "https://civil-amaranth-ifyzycavnl.edgeone.dev/"
+      link: "https://civil-amaranth-ifyzycavnl.edgeone.dev/",
+      date: "Sep 2024",
+      status: "Completed"
     },
     {
       title: "Web Design Prototypes",
       description: "Developed various responsive web layouts and interface components during web design training. Focused on cross-browser compatibility and user experience best practices.",
-      technologies: ["Bootstrap", "jQuery", "HTML/CSS", "Figma"]
+      technologies: ["Bootstrap", "jQuery", "HTML/CSS", "Figma"],
+      date: "Aug 2024",
+      status: "Completed"
     }
   ],
   education: [
