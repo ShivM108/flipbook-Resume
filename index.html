@@ -31,6 +31,45 @@
         overflow: hidden; /* Prevent scrolling, let the book handle layout */
         background-color: #e2e8f0;
       }
+
+      /* Global Utility Classes for 3D and Scrollbars */
+      .perspective-container { perspective: 1500px; }
+      .transform-style-3d { transform-style: preserve-3d; }
+      .backface-hidden { backface-visibility: hidden; }
+      .rotate-y-180 { transform: rotateY(180deg); }
+      
+      /* Custom Scrollbar */
+      .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+      
+      /* Transitions */
+      .cubic-bezier { transition-timing-function: cubic-bezier(0.645, 0.045, 0.355, 1); }
+
+      /* Print Styles */
+      @media print {
+        @page { margin: 1.0cm; size: auto; }
+        html, body, #root { 
+          height: auto !important; 
+          overflow: visible !important; 
+          background: white !important; 
+        }
+        .print\:hidden { display: none !important; }
+        .print\:block { display: block !important; position: static !important; }
+        
+        /* Override animations and hidden states for resume content */
+        .opacity-0 { opacity: 1 !important; }
+        .translate-y-8, .translate-y-4, .translate-y-2 { transform: none !important; }
+        
+        /* Force expand collapsed sections (projects) */
+        .max-h-0 { max-height: none !important; opacity: 1 !important; display: block !important; }
+        
+        /* Disable transitions for instant rendering */
+        * { transition: none !important; animation: none !important; }
+        
+        /* Link styling for print */
+        a { text-decoration: none !important; color: #000 !important; }
+        a[href^="http"]:after { content: " (" attr(href) ")"; font-size: 0.8em; color: #555; }
+      }
     </style>
   <script type="importmap">
 {

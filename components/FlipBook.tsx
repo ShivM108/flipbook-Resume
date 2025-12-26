@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, RotateCcw, Printer } from 'lucide-react';
 
 interface FlipBookProps {
-  children: React.ReactNode[];
+  children: React.ReactNode; // Updated to generic ReactNode for safety
 }
 
 export const FlipBook: React.FC<FlipBookProps> = ({ children }) => {
@@ -18,14 +18,18 @@ export const FlipBook: React.FC<FlipBookProps> = ({ children }) => {
   // Desktop State: Sheet Index (Spread)
   const [sheetIndex, setSheetIndex] = useState(0);
 
+  // Helper to handle children safely
+  const childrenArray = React.Children.toArray(children);
+  const childrenCount = childrenArray.length;
+
   // Group children into sheets for Desktop Mode
   const pairs = React.useMemo(() => {
     const p = [];
-    for (let i = 0; i < children.length; i += 2) {
-      p.push([children[i], children[i+1] || null]);
+    for (let i = 0; i < childrenCount; i += 2) {
+      p.push([childrenArray[i], childrenArray[i+1] || null]);
     }
     return p;
-  }, [children]);
+  }, [childrenArray, childrenCount]);
 
   const totalSheets = pairs.length;
 
@@ -47,19 +51,22 @@ export const FlipBook: React.FC<FlipBookProps> = ({ children }) => {
   }, []);
 
   // Sync state when switching modes
+  // Fix: Explicitly disable exhaustive-deps because we ONLY want to convert indices when 'isMobile' changes.
+  // We do not want to re-run this when sheetIndex changes during normal navigation.
   useEffect(() => {
     if (isMobile) {
-      setSinglePageIndex(Math.min(sheetIndex * 2, children.length - 1));
+      setSinglePageIndex(Math.min(sheetIndex * 2, childrenCount - 1));
     } else {
       setSheetIndex(Math.floor(singlePageIndex / 2));
     }
-  }, [isMobile]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMobile]); 
 
   // --- Navigation Handlers ---
   const next = () => {
     if (!animationsDone) setAnimationsDone(true);
     if (isMobile) {
-      if (singlePageIndex < children.length - 1) setSinglePageIndex(p => p + 1);
+      if (singlePageIndex < childrenCount - 1) setSinglePageIndex(p => p + 1);
     } else {
       if (sheetIndex < totalSheets) setSheetIndex(p => p + 1);
     }
@@ -98,32 +105,6 @@ export const FlipBook: React.FC<FlipBookProps> = ({ children }) => {
   // --- Print View (Hidden on Screen) ---
   const PrintView = () => (
     <div className="hidden print:block print:absolute print:inset-0 print:z-[9999] print:bg-white print:w-full print:h-auto text-slate-900">
-      <style>{`
-        @media print {
-          @page { margin: 1.0cm; size: auto; }
-          html, body, #root { 
-            height: auto !important; 
-            overflow: visible !important; 
-            background: white !important; 
-          }
-          .print\\:hidden { display: none !important; }
-          .print\\:block { display: block !important; position: static !important; }
-          
-          /* Override animations and hidden states for resume content */
-          .opacity-0 { opacity: 1 !important; }
-          .translate-y-8, .translate-y-4, .translate-y-2 { transform: none !important; }
-          
-          /* Force expand collapsed sections (projects) */
-          .max-h-0 { max-height: none !important; opacity: 1 !important; display: block !important; }
-          
-          /* Disable transitions for instant rendering */
-          * { transition: none !important; animation: none !important; }
-          
-          /* Link styling for print */
-          a { text-decoration: none !important; color: #000 !important; }
-          a[href^="http"]:after { content: " (" attr(href) ")"; font-size: 0.8em; color: #555; }
-        }
-      `}</style>
       <div className="max-w-4xl mx-auto p-0">
         {React.Children.map(children, (child, index) => (
           <div key={index} className="mb-6 pb-6 border-b border-slate-200 last:border-0 break-inside-avoid page-break-after-auto">
@@ -146,9 +127,9 @@ export const FlipBook: React.FC<FlipBookProps> = ({ children }) => {
               <ChevronLeft size={20} />
             </button>
             <div className="text-xs font-medium text-slate-600 bg-white px-3 py-1.5 rounded-full shadow-sm">
-              Page {singlePageIndex + 1} / {children.length}
+              Page {singlePageIndex + 1} / {childrenCount}
             </div>
-            <button onClick={next} disabled={singlePageIndex === children.length - 1} className={`p-2 rounded-full bg-white shadow-lg transition-all ${singlePageIndex === children.length - 1 ? 'opacity-50' : 'text-blue-600'}`}>
+            <button onClick={next} disabled={singlePageIndex === childrenCount - 1} className={`p-2 rounded-full bg-white shadow-lg transition-all ${singlePageIndex === childrenCount - 1 ? 'opacity-50' : 'text-blue-600'}`}>
               <ChevronRight size={20} />
             </button>
             <div className="w-px h-6 bg-slate-300 mx-1"></div>
@@ -170,7 +151,7 @@ export const FlipBook: React.FC<FlipBookProps> = ({ children }) => {
             }}
           >
             {React.Children.map(children, (child, index) => {
-              const zIndex = index < singlePageIndex ? index : children.length - index;
+              const zIndex = index < singlePageIndex ? index : childrenCount - index;
               const isFlipped = index < singlePageIndex;
               
               // Animation Logic
@@ -205,14 +186,6 @@ export const FlipBook: React.FC<FlipBookProps> = ({ children }) => {
               );
             })}
           </div>
-          <style>{`
-            .perspective-container { perspective: 1500px; }
-            .transform-style-3d { transform-style: preserve-3d; }
-            .backface-hidden { backface-visibility: hidden; }
-            .rotate-y-180 { transform: rotateY(180deg); }
-            .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-            .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
-          `}</style>
         </div>
         <PrintView />
       </>
@@ -317,15 +290,6 @@ export const FlipBook: React.FC<FlipBookProps> = ({ children }) => {
             <span>Reset</span>
           </button>
         )}
-
-        <style>{`
-          .transform-style-3d { transform-style: preserve-3d; }
-          .backface-hidden { backface-visibility: hidden; }
-          .rotate-y-180 { transform: rotateY(180deg); }
-          .cubic-bezier { transition-timing-function: cubic-bezier(0.645, 0.045, 0.355, 1); }
-          .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-          .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
-        `}</style>
       </div>
       <PrintView />
     </>
